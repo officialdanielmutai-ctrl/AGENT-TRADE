@@ -7,7 +7,7 @@
  * @returns {object} A fully-formed fallback response object matching
  *   the Zod schema expected by the EA.
  */
-export function buildHold(reason) {
+function buildHold(reason) {
   return {
     schema_version: '1.0',
     decision_type: 'FALLBACK',
@@ -26,3 +26,5 @@ export function buildHold(reason) {
     watch: [],
   };
 }
+
+module.exports = { buildHold };
