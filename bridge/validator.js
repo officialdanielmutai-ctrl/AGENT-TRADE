@@ -15,14 +15,14 @@ const decisionSchema = z.object({
   entry: z.object({
     price: z.number(),
     sl: z.number(),
-    tp: z.number().optional(),
+    tp: z.number().nullable().optional(),
     tp_basis: z.string().optional(),
     lot_size: z.number(),
   }).nullable(),
   management: z.object({
     action: z.string(),
-    sl_adjustment: z.number().optional(),
-    close_percent: z.number().optional(),
+    sl_adjustment: z.number().nullable().optional(),
+    close_percent: z.number().nullable().optional(),
   }).nullable(),
   reasoning: z.object({
     summary: z.string(),

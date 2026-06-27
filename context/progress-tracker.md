@@ -4,10 +4,7 @@
 **Phase 1 — Bridge in isolation (no MT5)**
 
 ## Current Step
-**1.0 — Development environment setup**
-
-Context files committed to repo. Bridge directory and folder
-structure created. Ready to begin Phase 1 implementation.
+**1.3 — `bridge/llm.js` — Anthropic SDK caller + 8s timeout + fallback**
 
 ---
 
@@ -24,19 +21,27 @@ structure created. Ready to begin Phase 1 implementation.
       `context/code-standards.md`, `context/ai-workflow-rules.md`,
       `context/progress-tracker.md`, `context/specs/00-build-plan.md`
 
+### Phase 1 — Bridge
+- [x] 1.1 — `npm init` + install packages in `bridge/`
+      (`express`, `@anthropic-ai/sdk`, `zod`, `dotenv`, `pm2` installed;
+      `package.json` and `package-lock.json` committed)
+- [x] 1.2 — `bridge/server.js` with `/heartbeat`, `/alert`, `/status`
+      (stub HOLD responses; `bridge/.gitignore` and
+      `bridge/.env.example` created)
+      Verified: `node server.js` boots, `/status` returns `{ok:true}`,
+      `/heartbeat` logs body and returns hardcoded HOLD stub.
+
 ---
 
 ## In Progress
 
-### Phase 1 — Bridge
-- [ ] 1.1 — `npm init` + install packages in `bridge/`
-- [ ] 1.2 — `bridge/server.js` with `/heartbeat`, `/alert`, `/status`
+### Phase 1 — Bridge (continued)
 - [ ] 1.3 — `bridge/llm.js` — Anthropic SDK caller + 8s timeout + fallback
 - [ ] 1.4 — `bridge/validator.js` — Zod schema for decision response
 - [ ] 1.5 — `bridge/logger.js` — JSONL append writer
 - [ ] 1.6 — `bridge/fallback.js` — static HOLD response constructor
 - [ ] 1.7 — `bridge/system_prompt.txt` — first draft (5 sections)
-- [ ] 1.8 — `bridge/.env.example` and `bridge/ecosystem.config.js`
+- [ ] 1.8 — `bridge/ecosystem.config.js` — PM2 config
 - [ ] 1.9 — `tools/prompt_tester.js` — send sample payloads, print response
 - [ ] 1.10 — `tools/sample_payloads/` — 5 reference JSONs
 - [ ] 1.11 — Phase 1 gate: all 6 checklist items pass
@@ -63,14 +68,13 @@ structure created. Ready to begin Phase 1 implementation.
 
 ---
 
-## Next Step
+## Session Notes
 
-**1.1 — Initialise the Bridge npm project**
-
-```
-cd bridge
-npm init -y
-npm install express @anthropic-ai/sdk zod dotenv pm2
-```
-
-Then begin 1.2: `bridge/server.js`.
+- `bridge/llm.js` must read model name from `process.env.LLM_MODEL`
+  — never hardcode a model string. Confirm current recommended Claude
+  Sonnet model identifier against Anthropic docs before wiring in.
+- The hardcoded HOLD stub in `server.js` (`/heartbeat` and `/alert`)
+  will be replaced in step 1.3 once `llm.js` is wired in and proven.
+- `bridge/fallback.js` (step 1.6) must be written before `llm.js`
+  imports it — or write them together in the same prompt so the
+  import doesn't break on first run.
