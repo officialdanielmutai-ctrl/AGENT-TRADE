@@ -1,0 +1,50 @@
+{
+  "schema_version": "1.0",
+  "bar_number": 301,
+  "session": {
+    "type": "NORMAL",
+    "svr": 0.95
+  },
+  "regime": {
+    "type": "RANGING",
+    "der": 0.12,
+    "hurst": 0.48,
+    "regime_strength": 0.31,
+    "deceleration": false
+  },
+  "momentum": {
+    "phase": "NEUTRAL",
+    "npv": 0.08,
+    "ier": 0.9,
+    "acceleration": 0.01
+  },
+  "htf": {
+    "h1": 0.30,
+    "h4": -0.25,
+    "d1": 0.10,
+    "consensus": 0.03,
+    "agree_count": 1
+  },
+  "cross_pairs": {
+    "GBPUSD": "COASTING",
+    "USDCHF": "DEAD",
+    "USDJPY": "COASTING",
+    "AUDUSD": "DEAD",
+    "XAUUSD": "DEAD",
+    "USOIL": "DEAD"
+  },
+  "current_bar": {
+    "direction": "doji",
+    "body_ratio": 0.18,
+    "upper_wick_ratio": 0.41,
+    "lower_wick_ratio": 0.41,
+    "volume": 880,
+    "volume_avg": 1150
+  },
+  "health_score": null,
+  "macro_calendar": {
+    "minutes_to_next": 210,
+    "event": "FOMC Minutes",
+    "impact": "high"
+  }
+}

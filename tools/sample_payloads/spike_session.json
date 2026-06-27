@@ -1,0 +1,50 @@
+{
+  "schema_version": "1.0",
+  "bar_number": 923,
+  "session": {
+    "type": "SPIKE",
+    "svr": 2.4
+  },
+  "regime": {
+    "type": "TRENDING_DOWN",
+    "der": -0.85,
+    "hurst": 0.71,
+    "regime_strength": 0.88,
+    "deceleration": false
+  },
+  "momentum": {
+    "phase": "WAXING",
+    "npv": -0.81,
+    "ier": 2.1,
+    "acceleration": -0.22
+  },
+  "htf": {
+    "h1": -0.71,
+    "h4": -0.80,
+    "d1": -0.62,
+    "consensus": -0.74,
+    "agree_count": 3
+  },
+  "cross_pairs": {
+    "GBPUSD": "ACTIVE DOWN",
+    "USDCHF": "ACTIVE UP",
+    "USDJPY": "ACTIVE UP",
+    "AUDUSD": "ACTIVE DOWN",
+    "XAUUSD": "ACTIVE UP",
+    "USOIL": "COASTING"
+  },
+  "current_bar": {
+    "direction": "bearish",
+    "body_ratio": 0.81,
+    "upper_wick_ratio": 0.08,
+    "lower_wick_ratio": 0.11,
+    "volume": 3200,
+    "volume_avg": 1200
+  },
+  "health_score": null,
+  "macro_calendar": {
+    "minutes_to_next": 2,
+    "event": "NFP",
+    "impact": "high"
+  }
+}

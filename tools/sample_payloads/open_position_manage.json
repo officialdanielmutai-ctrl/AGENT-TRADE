@@ -1,0 +1,50 @@
+{
+  "schema_version": "1.0",
+  "bar_number": 654,
+  "session": {
+    "type": "NORMAL",
+    "svr": 1.05
+  },
+  "regime": {
+    "type": "RANGING",
+    "der": 0.18,
+    "hurst": 0.46,
+    "regime_strength": 0.29,
+    "deceleration": true
+  },
+  "momentum": {
+    "phase": "WANING",
+    "npv": 0.22,
+    "ier": 0.85,
+    "acceleration": 0.08
+  },
+  "htf": {
+    "h1": 0.20,
+    "h4": -0.15,
+    "d1": -0.30,
+    "consensus": -0.05,
+    "agree_count": 1
+  },
+  "current_bar": {
+    "direction": "bullish",
+    "body_ratio": 0.55,
+    "upper_wick_ratio": 0.25,
+    "lower_wick_ratio": 0.20,
+    "volume": 1050,
+    "volume_avg": 1100
+  },
+  "open_position": {
+    "direction": "SELL",
+    "entry_price": 1.08720,
+    "current_price": 1.08810,
+    "sl": 1.08850,
+    "pips_at_risk": 13,
+    "unrealised_pnl": -9.0
+  },
+  "health_score": 31,
+  "macro_calendar": {
+    "minutes_to_next": 45,
+    "event": "ECB Speech",
+    "impact": "medium"
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "schema_version": "1.0",
+  "bar_number": 847,
+  "session": {
+    "type": "HOT",
+    "svr": 1.6
+  },
+  "regime": {
+    "type": "TRENDING_DOWN",
+    "der": -0.72,
+    "hurst": 0.61,
+    "regime_strength": 0.78,
+    "deceleration": false
+  },
+  "momentum": {
+    "phase": "WAXING",
+    "npv": -0.68,
+    "ier": 1.4,
+    "acceleration": -0.12
+  },
+  "htf": {
+    "h1": -0.6,
+    "h4": -0.71,
+    "d1": -0.55,
+    "consensus": -0.65,
+    "agree_count": 3
+  },
+  "cross_pairs": {
+    "GBPUSD": "ACTIVE DOWN",
+    "USDCHF": "ACTIVE UP",
+    "USDJPY": "ACTIVE UP",
+    "AUDUSD": "COASTING",
+    "XAUUSD": "DEAD",
+    "USOIL": "DEAD"
+  },
+  "current_bar": {
+    "direction": "bearish",
+    "body_ratio": 0.72,
+    "upper_wick_ratio": 0.18,
+    "lower_wick_ratio": 0.10,
+    "volume": 1840,
+    "volume_avg": 1200
+  },
+  "health_score": null,
+  "macro_calendar": {
+    "minutes_to_next": 87,
+    "event": "EUR CPI",
+    "impact": "medium"
+  }
+}
