@@ -12,6 +12,7 @@
 #include <LEINTUMEngine/TradeHealthMonitor.mqh>
 #include <LEINTUMEngine/MarketStatePackager.mqh>
 #include <LEINTUMEngine/RiskManager.mqh>
+#include <LEINTUMEngine/BridgeClient.mqh>
 
 // ------------------------------------------------------------
 // Input parameters
@@ -34,6 +35,7 @@ CCorrelationMonitor*  g_correlation;
 CTradeHealthMonitor*  g_health;
 CMarketStatePackager* g_packager;
 CRiskManager*         g_risk;
+CBridgeClient*        g_bridge;
 
 // ------------------------------------------------------------
 // Track last bar time
@@ -55,6 +57,7 @@ int OnInit()
    g_correlation = new CCorrelationMonitor(g_fabric);
    g_health      = new CTradeHealthMonitor(g_fabric);
    g_risk        = new CRiskManager(InpDailyLossLimit, InpBaseLotSize, InpMaxSpreadPoints);
+   g_bridge      = new CBridgeClient(8000);
    g_packager    = new CMarketStatePackager();
 
    Print("[LEINTUM] EA initialised");
@@ -76,6 +79,7 @@ void OnDeinit(const int reason)
    delete g_correlation;
    delete g_health;
    delete g_risk;
+   delete g_bridge;
    delete g_packager;
 
    Print("[LEINTUM] EA deinitialised");
@@ -192,5 +196,17 @@ void OnTick()
    // Serialize and print payload
    string payload = g_packager.Serialize(state);
    PrintFormat("[LEINTUM] Payload: %s", payload);
-   Print("[LEINTUM] Bar complete — Bridge not yet connected (Phase 2)");
+
+   string response;
+   bool sent = g_bridge.SendHeartbeat(payload, response);
+
+   if(!sent)
+   {
+      Print("[LEINTUM] Bridge unreachable — no response this bar (Phase 3, no execution yet)");
+   }
+   else
+   {
+      PrintFormat("[LEINTUM] LLM Response: %s", response);
+      Print("[LEINTUM] Bar complete — response logged, no execution yet (Phase 3)");
+   }
 }
