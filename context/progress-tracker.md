@@ -94,16 +94,21 @@
 - [x] 3.2 — Bridge logging of MT5 payloads — every received payload
       logged to session JSONL; LLM response printed to MT5 Expert log;
       NO execution
-- [/] 3.3 — June 1–5 2026 replay — `tools/backtest_replay.py` built
+- [x] 3.3 — June 1–5 2026 replay — `tools/backtest_replay.py` built
       and verified; first replay run completed (384 bars, 0 errors);
       `MarketStatePackager.mqh` patched to include OHLC prices in
-      `current_bar` payload — re-run required with fresh EA payload
-      so LLM can reason about specific price levels (benchmark bar at
-      1.08522 was previously failing because close/high/low were absent)
-- [ ] 3.4 — System prompt iteration — benchmark pass condition met;
-      all changes logged in `docs/SYSTEM_PROMPT_NOTES.md`
-- [ ] 3.5 — Phase 3 gate — all 5 gate checks in `ai-workflow-rules.md`
-      pass
+      `current_bar` payload; second replay confirmed prices now flow
+      correctly to the LLM (16 non-fallback trade decisions).
+- [x] 3.4 — System prompt iteration — two-iteration upgrade:
+      (1) Institutional Analyst model — removed rigid kill-switches,
+      added Analytical Synthesis + "Price is Truth" override;
+      (2) Prior-bar memory — `backtest_replay.py` now injects a 5-bar
+      rolling history (`prior_bars`) into each payload; system prompt
+      updated to teach the LLM to use `prior_bars` for spotting
+      Distribution Tops and Accumulation Floors across multiple bars.
+      All changes logged in `docs/SYSTEM_PROMPT_NOTES.md`.
+- [/] 3.5 — Phase 3 gate — pending benchmark re-run with prior_bars;
+      gate checks in `ai-workflow-rules.md` not yet fully verified.
 
 ---
 

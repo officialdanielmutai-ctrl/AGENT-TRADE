@@ -37,6 +37,15 @@ async function callLLM(systemPrompt, payload) {
     ]);
 
     const data = await response.json();
+
+    // Guard: if DeepSeek returns an error body (e.g. invalid key, quota
+    // exceeded, unknown model) it has no choices array.  Log the full
+    // response so the operator can see the exact API error, then fall back.
+    if (!data.choices || data.choices.length === 0) {
+      console.error('[llm] API returned no choices — full response:', JSON.stringify(data));
+      return fallback.buildHold('LLM_ERROR');
+    }
+
     const text = data.choices[0].message.content;
     const parsed = JSON.parse(text);
     return parsed;
