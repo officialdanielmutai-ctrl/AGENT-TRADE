@@ -175,6 +175,16 @@ Valid `action` values: `OPEN_BUY`, `OPEN_SELL`, `HOLD`,
 - Additive changes (new optional field) do not require a version bump
   but must be documented here.
 
+**Additive change — current_bar payload block (schema v1.0, unchanged):**
+`open`, `high`, `low`, `close` (float, 5 d.p.) added to the
+`current_bar` JSON object in `MarketStatePackager.mqh`. Field ordering:
+raw OHLC prices first, then `body_ratio`, `upper_wick_ratio`,
+`lower_wick_ratio`, `volume`, `volume_avg`. The `SBarAnatomy` struct
+in `Defines.mqh` already declared these fields — the Packager was
+simply not serialising them, causing the LLM to hallucinate entry
+prices. This is an additive change: `validator.js` validates the LLM
+response (not the MT5 payload) and is unchanged.
+
 ---
 
 ## Git

@@ -101,7 +101,22 @@ public:
       StringAdd(json, "},");
 
       // current_bar
+      // Raw OHLC prices come first so the LLM can reason about specific
+      // price levels (e.g. key S/R, distribution ceilings).
+      // Derived ratio fields follow.  Precision: 5dp for EURUSD.
       StringAdd(json, "\"current_bar\":{");
+      StringAdd(json, "\"open\":");
+      json += StringFormat("%.5f", state.current_bar.open);
+      StringAdd(json, ",");
+      StringAdd(json, "\"high\":");
+      json += StringFormat("%.5f", state.current_bar.high);
+      StringAdd(json, ",");
+      StringAdd(json, "\"low\":");
+      json += StringFormat("%.5f", state.current_bar.low);
+      StringAdd(json, ",");
+      StringAdd(json, "\"close\":");
+      json += StringFormat("%.5f", state.current_bar.close);
+      StringAdd(json, ",");
       StringAdd(json, "\"body_ratio\":");
       json += StringFormat("%.4f", state.current_bar.body_ratio);
       StringAdd(json, ",");

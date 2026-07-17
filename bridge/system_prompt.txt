@@ -91,6 +91,11 @@ and CHF/JPY moving in the opposite direction.
 
 BAR ANATOMY
 The current_bar block gives you the M15 bar that just closed.
+- open / high / low / close: exact prices for the closed bar. Use
+  these to identify specific structural levels — rejection zones,
+  distribution ceilings, prior swing highs and lows. When reasoning
+  about a specific price level (e.g. "four tests of 1.08522"), cite
+  the actual value from the payload, not a rounded approximation.
 - body_ratio: size of the candle body as a fraction of the total range.
   High body ratio (> 0.6) = decisive, directional bar.
   Low body ratio (< 0.3) = indecisive, doji-like.

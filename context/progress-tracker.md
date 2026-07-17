@@ -1,10 +1,10 @@
 # Progress Tracker
 
 ## Current Phase
-**Phase 2 — MT5 Formula Layer**
+**Phase 3 — MT5 → Bridge Connected**
 
 ## Current Step
-**2.1 — `mt5/Include/LEINTUMEngine/Defines.mqh` — all structs, enums, constants**
+**3.3 — June 1–5 2026 replay — run `tools/backtest_replay.py tools/june_2026_replay.txt` against live Bridge; review LLM decisions against benchmark**
 
 ---
 
@@ -48,38 +48,61 @@
 - [x] 1.11 — Phase 1 gate — all 6 checklist items in
       `ai-workflow-rules.md` pass
 
+### Phase 2 — MT5 Formula Layer (complete)
+- [x] 2.1 — `mt5/Include/LEINTUMEngine/Defines.mqh` — all structs,
+      enums, constants; no duplicate definitions; compiles clean
+- [x] 2.2 — `mt5/Include/LEINTUMEngine/PriceFabric.mqh` — `Refresh()`
+      fetches OHLCV for 8 TFs + 6 instruments; correct bar counts
+      confirmed in Expert log
+- [x] 2.3 — `mt5/Include/LEINTUMEngine/SessionProfile.mqh` — SVR
+      computed; state correctly resolves to SPIKE/HOT/NORMAL/QUIET;
+      `slMultiplier` clamped
+- [x] 2.4 — `mt5/Include/LEINTUMEngine/RegimeDetector.mqh` — DER, Hurst,
+      RBE computed; `regime_strength` clamped to [0,1] confirmed across
+      test run; deceleration flag works
+- [x] 2.5 — `mt5/Include/LEINTUMEngine/MomentumPhase.mqh` — NPV, IER,
+      acceleration, jerk computed; phase correctly resolves to
+      WAXING/WANING/NEUTRAL/EXHAUSTED
+- [x] 2.6 — `mt5/Include/LEINTUMEngine/ConditionAssessor.mqh` — VWAP
+      value area, SDS, BQS computed; `in_value` bool correct
+- [x] 2.7 — `mt5/Include/LEINTUMEngine/ContextAnalyzer.mqh` — HTF flow
+      scores for H1/H4/D1; consensus + agree_count correct; H4 confirmed
+      at 2x weight
+- [x] 2.8 — `mt5/Include/LEINTUMEngine/CorrelationMonitor.mqh` —
+      per-pair energy state, net dir, velocity reversal; DEAD pairs
+      excluded from consensus
+- [x] 2.9 — `mt5/Include/LEINTUMEngine/TradeHealthMonitor.mqh` —
+      5-component HealthScore [0,100]; `emergencyExit` bool fires below 25
+- [x] 2.10 — `mt5/Include/LEINTUMEngine/MarketStatePackager.mqh` —
+      `Serialize()` outputs valid JSON; verified zero errors on
+      jsonlint.com; all fields labeled
+- [x] 2.11 — `mt5/Include/LEINTUMEngine/RiskManager.mqh` — conviction
+      gate, spread gate, daily loss limit, lot sizing all enforced
+- [x] 2.12 — `mt5/Experts/LEINTUM_Engine.mq5` (formula loop only) —
+      compiles clean; Strategy Tester run confirms regime/momentum
+      output every bar; no execution logic present yet
+- [x] 2.13 — Phase 2 gate — all 6 gate checks in `ai-workflow-rules.md`
+      pass
+
 ---
 
 ## In Progress
 
-### Phase 2 — MT5 Formula Layer
-- [ ] 2.1 — `mt5/Include/LEINTUMEngine/Defines.mqh` — all structs,
-      enums, constants; no duplicate definitions; compiles clean
-- [ ] 2.2 — `mt5/Include/LEINTUMEngine/PriceFabric.mqh` — `Refresh()`
-      fetches OHLCV for 8 TFs + 6 instruments; correct bar counts
-- [ ] 2.3 — `mt5/Include/LEINTUMEngine/SessionProfile.mqh` — SVR; state
-      is one of SPIKE/HOT/NORMAL/QUIET; `slMultiplier` clamped
-- [ ] 2.4 — `mt5/Include/LEINTUMEngine/RegimeDetector.mqh` — DER, Hurst,
-      RBE; `regime_strength` clamped to [0,1]; deceleration flag works
-- [ ] 2.5 — `mt5/Include/LEINTUMEngine/MomentumPhase.mqh` — NPV, IER,
-      acceleration, jerk; phase is WAXING/WANING/NEUTRAL/EXHAUSTED
-- [ ] 2.6 — `mt5/Include/LEINTUMEngine/ConditionAssessor.mqh` — VWAP
-      value area, SDS, BQS; `in_value` bool correct
-- [ ] 2.7 — `mt5/Include/LEINTUMEngine/ContextAnalyzer.mqh` — HTF flow
-      scores for H1/H4/D1; consensus + agree_count; H4 gets 2x weight
-- [ ] 2.8 — `mt5/Include/LEINTUMEngine/CorrelationMonitor.mqh` — per-pair
-      energy state, net dir, velocity reversal; DEAD pairs excluded
-- [ ] 2.9 — `mt5/Include/LEINTUMEngine/TradeHealthMonitor.mqh` — 5-component
-      HealthScore [0,100]; `emergencyExit` bool fires below 25
-- [ ] 2.10 — `mt5/Include/LEINTUMEngine/MarketStatePackager.mqh` —
-      `Serialize()` outputs valid JSON; jsonlint.com zero errors; all
-      fields labeled
-- [ ] 2.11 — `mt5/Include/LEINTUMEngine/RiskManager.mqh` — conviction
-      gate, spread gate, daily loss limit, lot sizing enforced
-- [ ] 2.12 — `mt5/Experts/LEINTUM_Engine.mq5` (formula loop only) —
-      compiles; Strategy Tester shows regime/momentum output every bar;
-      no execution yet
-- [ ] 2.13 — Phase 2 gate — all 6 gate checks in `ai-workflow-rules.md`
+### Phase 3 — MT5 → Bridge Connected
+- [x] 3.1 — `mt5/Include/LEINTUMEngine/BridgeClient.mqh` — EA POSTs
+      payload to Bridge; Bridge console shows received JSON
+- [x] 3.2 — Bridge logging of MT5 payloads — every received payload
+      logged to session JSONL; LLM response printed to MT5 Expert log;
+      NO execution
+- [/] 3.3 — June 1–5 2026 replay — `tools/backtest_replay.py` built
+      and verified; first replay run completed (384 bars, 0 errors);
+      `MarketStatePackager.mqh` patched to include OHLC prices in
+      `current_bar` payload — re-run required with fresh EA payload
+      so LLM can reason about specific price levels (benchmark bar at
+      1.08522 was previously failing because close/high/low were absent)
+- [ ] 3.4 — System prompt iteration — benchmark pass condition met;
+      all changes logged in `docs/SYSTEM_PROMPT_NOTES.md`
+- [ ] 3.5 — Phase 3 gate — all 5 gate checks in `ai-workflow-rules.md`
       pass
 
 ---
@@ -92,18 +115,18 @@
   1–5.
 - Telegram bot token: not yet created. Needed for Phase 4.
 - Economic calendar source for production `macro_calendar` field —
-  deferred post-Phase 5; hardcoded for June 1–5 2026 test week in
-  Phase 2 step 2.10.
+  deferred post-Phase 5; hardcoded for June 1–5 2026 test week
+  (built in Phase 2 step 2.10).
 
 ---
 
 ## Deferred / Known Issues
 
-- `system_prompt.txt` is a first draft until the Phase 3 benchmark
-  replay test passes. Expect 2–4 iterations during Phase 3.
-- Economic calendar for the `macro_calendar` payload field: hardcoded
-  for the June 1–5 2026 test week in Phase 2. Live calendar API
-  integration deferred post-Phase 5.
+- `system_prompt.txt` is still a first draft until the Phase 3
+  benchmark replay test passes. Expect 2–4 iterations during this
+  phase — this is the current phase's primary quality gate.
+- Live economic calendar API integration deferred post-Phase 5;
+  currently hardcoded for the June 1–5 2026 test week only.
 
 ---
 
@@ -113,22 +136,41 @@
   hardcoded in source. Operator sets this in `.env` at deploy time.
 - `bridge/fallback.js` was built before `llm.js` to avoid a broken
   import on first run — both written in the same Phase 1 prompt.
-- Phase 2 critical rule: every composite score (`regime_strength`,
-  `confidence`, `health_score`, etc.) is clamped to its defined range
-  at the point of computation in the MQL5 module — not downstream.
-  This directly addresses the unclamped regime-strength bug found in
-  the one-month backtest. See `architecture.md` Invariant 8.
+- Every composite score (`regime_strength`, `confidence`,
+  `health_score`, etc.) is clamped to its defined range at the point
+  of computation in the MQL5 module, not downstream — confirmed
+  across all Phase 2 modules. This directly fixes the unclamped
+  regime-strength bug found in the original one-month backtest.
+- `CPriceFabric` is the single OHLCV source for every formula module
+  — no module calls `Copy*` directly. Confirmed during Phase 2 build.
+- `tools/backtest_replay.py` uses Python standard library only
+  (urllib.request, json, sys, time, argparse) — no pip install
+  required. MT5's WebRequest is sandboxed inside Strategy Tester
+  agents, so this script is the workaround for the Phase 3.3
+  benchmark replay. Input format: one JSON payload per line (.txt);
+  blank lines and MT5 log prefixes handled automatically; one
+  failed bar never stops the run.
+- `SBarAnatomy` in `Defines.mqh` always declared `open`, `high`,
+  `low`, `close` fields. `MarketStatePackager.mqh` was not serialising
+  them, causing the LLM to hallucinate prices when the schema required
+  `entry.price`. Fixed by adding OHLC fields at the top of the
+  `current_bar` JSON block (additive change, schema v1.0 unchanged).
+  `bridge/system_prompt.txt` updated to tell Claude these fields exist.
+  `context/code-standards.md` updated to document the additive change.
 
 ---
 
 ## Session Notes
 
-- Phase 2 starts with `Defines.mqh` — reshape structs first, confirm
-  zero compile errors, then build each module against the new shapes.
-  Do not change struct layout and module logic in the same step.
-- Build order within Phase 2 matters: `Defines.mqh` → `PriceFabric`
-  → then modules one at a time. Each module reads from `CPriceFabric`
-  only — no direct `Copy*` calls inside individual modules.
-- `LEINTUM_Engine.mq5` in step 2.12 runs formula modules only — no
-  `BridgeClient`, no `DecisionExecutor` yet. Those come in Phases 3
-  and 4.
+- Phase 3 is a wiring-and-observation phase, not a feature-build
+  phase: `BridgeClient.mqh` sends payloads and decisions are logged,
+  **not executed**. Do not let `DecisionExecutor` logic creep in here
+  — that's Phase 4.
+- The June 1–5 2026 replay (step 3.3) and the Phase 3 benchmark
+  acceptance test (the Tuesday 16:00 June 2 2026 bar — four failed
+  tests of 1.08522 followed by a distribution break on volume drop)
+  are the same gate referenced in `ai-workflow-rules.md`. Do not mark
+  3.4 done until that specific bar passes.
+- Every system prompt change made during Phase 3 must be recorded in
+  `docs/SYSTEM_PROMPT_NOTES.md` — this file doesn't exist yet and
+  should be created as part of step 3.4.
