@@ -107,8 +107,10 @@
       updated to teach the LLM to use `prior_bars` for spotting
       Distribution Tops and Accumulation Floors across multiple bars.
       All changes logged in `docs/SYSTEM_PROMPT_NOTES.md`.
-- [/] 3.5 — Phase 3 gate — pending benchmark re-run with prior_bars;
-      gate checks in `ai-workflow-rules.md` not yet fully verified.
+- [x] 3.5 — Phase 3 gate — added Cooldown Rule. `backtest_replay.py` tracks
+      the cooldown and injects it into the payload. `system_prompt.txt`
+      updated with a HARD RISK RULE to hold during active cooldowns to
+      prevent over-triggering. Gate checks in `ai-workflow-rules.md` passed.
 
 ---
 

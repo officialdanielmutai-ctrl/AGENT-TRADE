@@ -29,3 +29,17 @@ The LLM is now empowered to make qualitative, analyst-style judgments when the q
 
 **Expected Result:**
 With prior_bars context, the LLM should now see bars 35172–35175 all tested ~1.16525 and were rejected. Bar 35176 (another doji at the same ceiling) should trigger the Distribution Top rule and return OPEN_SELL.
+
+---
+
+## Phase 3.5 Iteration 3 - Cooldown Rule (Prevent Over-triggering)
+
+**Date:** July 2026
+**Issue:** The Distribution Top rule triggered perfectly on the benchmark bar (35176), but it caused the LLM to over-trade significantly (87 trades in a week). Once a Distribution Top forms, every subsequent bar in the same zone looks like a Distribution Top.
+
+**Changes Made:**
+1. **`tools/backtest_replay.py`** — Added cooldown state tracking. Injects `cooldown: { active: bool, bars_since_last_trade: int, last_action: string }` into the payload. Cooldown is hardcoded to 12 bars (3 hours on M15).
+2. **`bridge/system_prompt.txt`** — Added `COOLDOWN TRACKING (cooldown)` to the Measurement Framework. Added a new `HARD RISK RULE 4 (COOLDOWN GATE)`: "If cooldown.active is true, return HOLD."
+
+**Expected Result:**
+The system should still catch the benchmark +40 pip move on the initial signal, but then immediately enter a HOLD state for the next 12 bars, preventing the 30+ sequential stacked trades that were bleeding capital through tight stop-outs on minor pullbacks. Trade count should drop significantly to 10–20 per week.

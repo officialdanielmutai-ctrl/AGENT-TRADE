@@ -129,6 +129,12 @@ def main():
     # Each entry is a slim summary dict (bar_number + current_bar anatomy).
     HISTORY_WINDOW = 5
     bar_history = []  # most-recent last
+    
+    # Cooldown tracker to prevent over-triggering
+    # Set to 12 bars (3 hours on M15) after an OPEN_BUY or OPEN_SELL
+    COOLDOWN_PERIOD = 12
+    last_trade_bar = -9999
+    last_trade_action = None
 
     for line_index, raw_line in enumerate(lines, start=1):
         line = raw_line.strip()
@@ -165,6 +171,15 @@ def main():
         if bar_history:
             payload["prior_bars"] = bar_history[-HISTORY_WINDOW:]
 
+        # --- Inject Cooldown context ---
+        bars_since = bar_number - last_trade_bar
+        is_active = (bars_since <= COOLDOWN_PERIOD)
+        payload["cooldown"] = {
+            "active": is_active,
+            "bars_since_last_trade": bars_since if last_trade_bar > 0 else 999,
+            "last_action": last_trade_action
+        }
+
         # After we have enriched the payload, snapshot this bar's anatomy
         # for the NEXT iteration's prior_bars.
         current_bar = payload.get("current_bar", {})
@@ -189,6 +204,12 @@ def main():
             response = post_payload(args.url, payload)
             print(format_result_line(bar_number, response))
             processed += 1
+            
+            # Update cooldown if a trade was opened
+            action = response.get("action", "")
+            if action in ["OPEN_BUY", "OPEN_SELL"]:
+                last_trade_bar = bar_number
+                last_trade_action = action
 
         except urllib.error.HTTPError as e:
             print(f"bar {bar_number} | ERROR: HTTP {e.code} {e.reason}")
