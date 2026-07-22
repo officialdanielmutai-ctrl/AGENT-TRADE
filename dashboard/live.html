@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LEINTUM — Live Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #0a0c10;
+    --surface:   #111318;
+    --surface2:  #181b22;
+    --border:    #1e2433;
+    --text:      #e2e8f0;
+    --muted:     #4a5568;
+    --accent:    #6366f1;
+    --buy:       #22c55e;
+    --sell:      #ef4444;
+    --warn:      #f59e0b;
+    --hold:      #475569;
+    --radius:    12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; font-size: 13px; min-height: 100vh; }
+
+  /* ── Header ── */
+  .header { display: flex; align-items: center; padding: 14px 24px; background: var(--surface); border-bottom: 1px solid var(--border); gap: 16px; }
+  .logo { font-size: 17px; font-weight: 700; letter-spacing: 3px; color: var(--accent); }
+  .tagline { color: var(--muted); font-size: 12px; }
+  .conn-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--sell); margin-left: auto; transition: background 0.3s; }
+  .conn-dot.connected { background: var(--buy); box-shadow: 0 0 8px var(--buy); }
+  .conn-label { font-size: 12px; color: var(--muted); margin-left: 6px; }
+  .last-update { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); margin-left: 12px; }
+
+  /* ── Grid ── */
+  .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; grid-template-rows: auto auto auto; gap: 12px; padding: 16px 24px; }
+  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
+  .panel-wide { grid-column: span 2; }
+  .panel-full { grid-column: span 3; }
+  .panel-title { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); margin-bottom: 12px; }
+
+  /* ── Current Bar Panel ── */
+  .bar-metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .metric { background: var(--surface2); border-radius: 8px; padding: 10px 12px; }
+  .metric-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+  .metric-value { font-family: 'JetBrains Mono', monospace; font-size: 16px; font-weight: 600; }
+  .metric-value.up   { color: var(--buy); }
+  .metric-value.down { color: var(--sell); }
+  .metric-value.neutral { color: var(--text); }
+
+  /* ── Position Panel ── */
+  .no-position { color: var(--muted); font-size: 13px; padding: 16px 0; text-align: center; }
+  .pos-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .pos-badge { padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; letter-spacing: 1px; font-family: 'JetBrains Mono', monospace; }
+  .pos-badge.buy  { background: #14532d; color: var(--buy); }
+  .pos-badge.sell { background: #7f1d1d; color: var(--sell); }
+  .pos-price { font-family: 'JetBrains Mono', monospace; font-size: 14px; }
+  .pos-metrics { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  .pnl-positive { color: var(--buy); }
+  .pnl-negative { color: var(--sell); }
+
+  /* ── Health Gauge ── */
+  .health-gauge { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
+  .gauge-bar { flex: 1; height: 8px; background: var(--surface2); border-radius: 4px; overflow: hidden; }
+  .gauge-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease, background 0.5s ease; }
+  .health-num { font-family: 'JetBrains Mono', monospace; font-size: 18px; font-weight: 700; min-width: 48px; text-align: right; }
+
+  /* ── Last Decision Panel ── */
+  .decision-action { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .action-badge { padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; letter-spacing: 1px; font-family: 'JetBrains Mono', monospace; }
+  .action-buy   { background: #14532d; color: var(--buy); }
+  .action-sell  { background: #7f1d1d; color: var(--sell); }
+  .action-hold  { background: #1e293b; color: var(--muted); }
+  .decision-summary { color: #94a3b8; line-height: 1.6; font-size: 13px; }
+  .watch-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .watch-tag { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 3px 10px; font-size: 11px; color: var(--muted); }
+
+  /* ── Trade Log ── */
+  .log-table { width: 100%; border-collapse: collapse; }
+  .log-table th { text-align: left; color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: 1px; padding: 6px 8px; border-bottom: 1px solid var(--border); font-weight: 500; }
+  .log-table td { padding: 8px 8px; border-bottom: 1px solid var(--border); font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+  .log-table tr:last-child td { border-bottom: none; }
+  .log-table tr:hover td { background: var(--surface2); }
+  .log-tag { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; letter-spacing: 0.5px; }
+
+  /* ── System Status ── */
+  .status-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .status-item { background: var(--surface2); border-radius: 8px; padding: 10px 12px; }
+
+  /* ── Animations ── */
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+  .pulsing { animation: pulse 1.5s infinite; }
+
+  @media (max-width: 900px) {
+    .grid { grid-template-columns: 1fr; }
+    .panel-wide, .panel-full { grid-column: span 1; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="logo">LEINTUM</div>
+    <div class="tagline">Live Dashboard — Phase 4</div>
+  </div>
+  <div class="conn-dot" id="conn-dot"></div>
+  <span class="conn-label" id="conn-label">Disconnected</span>
+  <span class="last-update" id="last-update">—</span>
+</div>
+
+<div class="grid">
+
+  <!-- Current Bar -->
+  <div class="panel">
+    <div class="panel-title">Current Bar — M15</div>
+    <div class="bar-metrics" id="bar-metrics">
+      <div class="metric"><div class="metric-label">Regime</div><div class="metric-value neutral" id="m-regime">—</div></div>
+      <div class="metric"><div class="metric-label">Momentum</div><div class="metric-value neutral" id="m-momentum">—</div></div>
+      <div class="metric"><div class="metric-label">Session</div><div class="metric-value neutral" id="m-session">—</div></div>
+      <div class="metric"><div class="metric-label">HTF Consensus</div><div class="metric-value neutral" id="m-htf">—</div></div>
+    </div>
+  </div>
+
+  <!-- Open Position -->
+  <div class="panel">
+    <div class="panel-title">Open Position</div>
+    <div id="pos-panel">
+      <div class="no-position">No open position</div>
+    </div>
+  </div>
+
+  <!-- System Status -->
+  <div class="panel">
+    <div class="panel-title">System Status</div>
+    <div class="status-grid">
+      <div class="status-item"><div class="metric-label">Bar #</div><div class="metric-value neutral" id="s-bar">—</div></div>
+      <div class="status-item"><div class="metric-label">Latency</div><div class="metric-value neutral" id="s-latency">—</div></div>
+      <div class="status-item"><div class="metric-label">Fallbacks</div><div class="metric-value neutral" id="s-fallbacks">0</div></div>
+      <div class="status-item"><div class="metric-label">Trades</div><div class="metric-value neutral" id="s-trades">0</div></div>
+    </div>
+  </div>
+
+  <!-- Last Decision -->
+  <div class="panel panel-wide">
+    <div class="panel-title">Last Decision</div>
+    <div class="decision-action">
+      <span class="action-badge action-hold" id="d-action">HOLD</span>
+      <span style="color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:12px;" id="d-bar">BAR —</span>
+    </div>
+    <div class="decision-summary" id="d-summary">Waiting for first heartbeat…</div>
+    <div class="watch-tags" id="d-watch"></div>
+  </div>
+
+  <!-- Trade Log -->
+  <div class="panel panel-full">
+    <div class="panel-title">Recent Trades</div>
+    <table class="log-table">
+      <thead>
+        <tr>
+          <th>Bar</th><th>Action</th><th>Entry</th><th>SL</th><th>Summary</th><th>Latency</th>
+        </tr>
+      </thead>
+      <tbody id="trade-log"></tbody>
+    </table>
+  </div>
+
+</div>
+
+<script>
+const WS_URL = 'ws://localhost:3001';
+let ws, reconnectTimer;
+let fallbacks = 0, trades = 0;
+const tradeRows = [];
+
+function connect() {
+  ws = new WebSocket(WS_URL);
+
+  ws.onopen = () => {
+    document.getElementById('conn-dot').classList.add('connected');
+    document.getElementById('conn-label').textContent = 'Connected';
+    clearTimeout(reconnectTimer);
+  };
+
+  ws.onclose = () => {
+    document.getElementById('conn-dot').classList.remove('connected');
+    document.getElementById('conn-label').textContent = 'Disconnected — retrying…';
+    reconnectTimer = setTimeout(connect, 3000);
+  };
+
+  ws.onmessage = e => {
+    try {
+      const data = JSON.parse(e.data);
+      handleMessage(data);
+    } catch {}
+  };
+}
+
+function handleMessage(data) {
+  const ts = new Date().toLocaleTimeString();
+  document.getElementById('last-update').textContent = 'Updated ' + ts;
+
+  if (data.fallback) fallbacks++;
+  document.getElementById('s-fallbacks').textContent = fallbacks;
+  document.getElementById('s-bar').textContent      = data.bar_number || '—';
+  document.getElementById('s-latency').textContent  = (data.latency_ms || 0) + ' ms';
+
+  // Current bar metrics from payload
+  const p = data.payload || {};
+  updateBar(p);
+  updatePosition(p);
+
+  // Decision
+  const resp = data.response || {};
+  updateDecision(resp, data.bar_number);
+
+  // Trade log
+  const action = resp.action;
+  if (action === 'OPEN_BUY' || action === 'OPEN_SELL') {
+    trades++;
+    document.getElementById('s-trades').textContent = trades;
+    addTradeRow(data);
+  }
+}
+
+function updateBar(p) {
+  const regime   = p.regime?.type   || '—';
+  const momentum = p.momentum?.phase || '—';
+  const session  = p.session?.type   || '—';
+  const htf      = p.htf?.consensus != null ? p.htf.consensus.toFixed(4) : '—';
+
+  document.getElementById('m-regime').textContent   = regime;
+  document.getElementById('m-momentum').textContent = momentum;
+  document.getElementById('m-session').textContent  = session;
+
+  const htfEl = document.getElementById('m-htf');
+  htfEl.textContent = htf;
+  htfEl.className = 'metric-value ' + (parseFloat(htf) > 0 ? 'up' : parseFloat(htf) < 0 ? 'down' : 'neutral');
+}
+
+function updatePosition(p) {
+  const panel = document.getElementById('pos-panel');
+  const hs = p.health_score;
+  if (hs === null || hs === undefined) {
+    panel.innerHTML = '<div class="no-position">No open position</div>';
+    return;
+  }
+  const color = hs >= 60 ? '#22c55e' : hs >= 25 ? '#f59e0b' : '#ef4444';
+  panel.innerHTML = `
+    <div class="health-gauge">
+      <div class="gauge-bar"><div class="gauge-fill" style="width:${hs}%;background:${color}"></div></div>
+      <div class="health-num" style="color:${color}">${hs.toFixed(0)}</div>
+    </div>
+    <div style="color:var(--muted);font-size:11px;margin-top:6px;">Health Score</div>`;
+}
+
+function updateDecision(resp, barNum) {
+  const action  = resp.action || 'HOLD';
+  const summary = resp.reasoning?.summary || '(no summary)';
+  const watch   = resp.watch || [];
+
+  const badgeClass = action === 'OPEN_BUY' ? 'action-buy' : action === 'OPEN_SELL' ? 'action-sell' : 'action-hold';
+  document.getElementById('d-action').className = 'action-badge ' + badgeClass;
+  document.getElementById('d-action').textContent = action.replace('OPEN_', '');
+  document.getElementById('d-bar').textContent    = 'BAR ' + (barNum || '—');
+  document.getElementById('d-summary').textContent = summary;
+  document.getElementById('d-watch').innerHTML = watch.map(w => `<span class="watch-tag">${w}</span>`).join('');
+}
+
+function addTradeRow(data) {
+  const resp   = data.response || {};
+  const entry  = resp.entry || {};
+  const action = resp.action;
+  const color  = action === 'OPEN_BUY' ? '#22c55e' : '#ef4444';
+  const tag    = action === 'OPEN_BUY' ? 'BUY' : 'SELL';
+  const tagBg  = action === 'OPEN_BUY' ? '#14532d' : '#7f1d1d';
+
+  const row = `<tr>
+    <td>${data.bar_number || '—'}</td>
+    <td><span class="log-tag" style="background:${tagBg};color:${color}">${tag}</span></td>
+    <td>${(entry.price || 0).toFixed(5)}</td>
+    <td>${(entry.sl || 0).toFixed(5)}</td>
+    <td style="color:#94a3b8;font-family:Inter,sans-serif;font-size:12px;">${(resp.reasoning?.summary || '').substring(0, 70)}…</td>
+    <td style="color:var(--muted)">${data.latency_ms || 0}ms</td>
+  </tr>`;
+
+  tradeRows.unshift(row);
+  if (tradeRows.length > 10) tradeRows.pop();
+  document.getElementById('trade-log').innerHTML = tradeRows.join('');
+}
+
+connect();
+</script>
+</body>
+</html>

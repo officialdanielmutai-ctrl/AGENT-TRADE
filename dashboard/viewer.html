@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LEINTUM — Session Viewer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #0d0f14;
+    --surface:   #151820;
+    --surface2:  #1c2030;
+    --border:    #252a3a;
+    --text:      #e2e8f0;
+    --muted:     #64748b;
+    --buy:       #22c55e;
+    --buy-dim:   #14532d;
+    --sell:      #ef4444;
+    --sell-dim:  #7f1d1d;
+    --hold:      #64748b;
+    --hold-dim:  #1e293b;
+    --warn:      #f59e0b;
+    --accent:    #6366f1;
+    --radius:    10px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; font-size: 14px; min-height: 100vh; }
+  
+  /* ── Header ── */
+  .header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 16px 24px; display: flex; align-items: center; gap: 16px; position: sticky; top: 0; z-index: 100; }
+  .logo { font-size: 18px; font-weight: 700; letter-spacing: 2px; color: var(--accent); }
+  .header-sub { color: var(--muted); font-size: 12px; }
+  .file-input-label { margin-left: auto; background: var(--accent); color: #fff; padding: 8px 16px; border-radius: var(--radius); cursor: pointer; font-size: 13px; font-weight: 500; transition: opacity 0.2s; }
+  .file-input-label:hover { opacity: 0.85; }
+  #file-input { display: none; }
+
+  /* ── Stats Strip ── */
+  .stats-strip { display: grid; grid-template-columns: repeat(6, 1fr); gap: 1px; background: var(--border); border-bottom: 1px solid var(--border); }
+  .stat { background: var(--surface); padding: 12px 16px; text-align: center; }
+  .stat-label { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+  .stat-value { font-size: 20px; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+  .stat-value.positive { color: var(--buy); }
+  .stat-value.negative { color: var(--sell); }
+  .stat-value.neutral  { color: var(--text); }
+
+  /* ── Toolbar ── */
+  .toolbar { padding: 12px 24px; display: flex; gap: 8px; align-items: center; border-bottom: 1px solid var(--border); background: var(--surface2); }
+  .filter-btn { padding: 6px 14px; border: 1px solid var(--border); background: var(--surface); color: var(--muted); border-radius: 20px; cursor: pointer; font-size: 12px; font-weight: 500; transition: all 0.2s; }
+  .filter-btn.active-all    { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .filter-btn.active-buy    { background: var(--buy-dim); border-color: var(--buy); color: var(--buy); }
+  .filter-btn.active-sell   { background: var(--sell-dim); border-color: var(--sell); color: var(--sell); }
+  .filter-btn.active-hold   { background: var(--hold-dim); border-color: var(--hold); color: var(--text); }
+  .search-box { margin-left: auto; background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 6px 12px; border-radius: 8px; font-size: 13px; width: 200px; }
+  .search-box:focus { outline: none; border-color: var(--accent); }
+
+  /* ── Cards ── */
+  .cards { padding: 16px 24px; display: flex; flex-direction: column; gap: 10px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; transition: border-color 0.2s; }
+  .card:hover { border-color: #374151; }
+  .card.buy-card  { border-left: 3px solid var(--buy); }
+  .card.sell-card { border-left: 3px solid var(--sell); }
+  .card.hold-card { border-left: 3px solid var(--hold); }
+  .card.fallback-card { border-left: 3px solid var(--warn); opacity: 0.6; }
+
+  .card-header { padding: 12px 16px; display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; }
+  .badge { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; letter-spacing: 1px; font-family: 'JetBrains Mono', monospace; }
+  .badge-buy      { background: var(--buy-dim); color: var(--buy); }
+  .badge-sell     { background: var(--sell-dim); color: var(--sell); }
+  .badge-hold     { background: var(--hold-dim); color: var(--muted); }
+  .badge-fallback { background: #451a03; color: var(--warn); }
+
+  .bar-num { color: var(--muted); font-size: 12px; font-family: 'JetBrains Mono', monospace; }
+  .prices { display: flex; gap: 16px; margin-left: 8px; }
+  .price-item { font-family: 'JetBrains Mono', monospace; font-size: 13px; }
+  .price-label { color: var(--muted); font-size: 10px; }
+  .summary-text { color: var(--muted); font-size: 13px; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .expand-icon { color: var(--muted); font-size: 16px; margin-left: auto; transition: transform 0.2s; }
+  .card.expanded .expand-icon { transform: rotate(180deg); }
+
+  .card-body { display: none; padding: 0 16px 14px; border-top: 1px solid var(--border); }
+  .card.expanded .card-body { display: block; }
+  .detail-section { margin-top: 12px; }
+  .detail-label { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+  .factor-list, .watch-list { list-style: none; }
+  .factor-list li, .watch-list li { padding: 4px 0; font-size: 13px; color: #94a3b8; border-bottom: 1px solid #1e293b; }
+  .factor-list li:last-child, .watch-list li:last-child { border-bottom: none; }
+  .factor-list li::before { content: "✓ "; color: var(--buy); }
+  .concern-list li::before { content: "⚠ "; color: var(--warn); }
+  .watch-list li::before  { content: "👁 "; }
+  .confidence-box { background: var(--surface2); border-radius: 8px; padding: 10px 14px; font-size: 13px; color: #94a3b8; line-height: 1.6; margin-top: 6px; }
+
+  /* ── Empty state ── */
+  .empty-state { text-align: center; padding: 80px 24px; color: var(--muted); }
+  .empty-state .icon { font-size: 48px; margin-bottom: 16px; }
+  .empty-state h3 { font-size: 18px; color: var(--text); margin-bottom: 8px; }
+
+  /* ── Responsive ── */
+  @media (max-width: 768px) {
+    .stats-strip { grid-template-columns: repeat(3, 1fr); }
+    .prices { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="logo">LEINTUM</div>
+    <div class="header-sub">Session Log Viewer — Phase 4</div>
+  </div>
+  <label class="file-input-label" for="file-input">📂 Load JSONL Log</label>
+  <input type="file" id="file-input" accept=".jsonl,.json,.txt">
+</div>
+
+<div class="stats-strip" id="stats-strip">
+  <div class="stat"><div class="stat-label">Bars</div><div class="stat-value neutral" id="stat-bars">—</div></div>
+  <div class="stat"><div class="stat-label">Trades</div><div class="stat-value neutral" id="stat-trades">—</div></div>
+  <div class="stat"><div class="stat-label">Wins</div><div class="stat-value positive" id="stat-wins">—</div></div>
+  <div class="stat"><div class="stat-label">Losses</div><div class="stat-value negative" id="stat-losses">—</div></div>
+  <div class="stat"><div class="stat-label">Fallbacks</div><div class="stat-value neutral" id="stat-fallbacks">—</div></div>
+  <div class="stat"><div class="stat-label">Win Rate</div><div class="stat-value neutral" id="stat-winrate">—</div></div>
+</div>
+
+<div class="toolbar">
+  <button class="filter-btn active-all" id="btn-all"    onclick="setFilter('all')">All</button>
+  <button class="filter-btn"            id="btn-buy"    onclick="setFilter('buy')">BUY</button>
+  <button class="filter-btn"            id="btn-sell"   onclick="setFilter('sell')">SELL</button>
+  <button class="filter-btn"            id="btn-hold"   onclick="setFilter('hold')">HOLD</button>
+  <button class="filter-btn"            id="btn-fb"     onclick="setFilter('fallback')">Fallback</button>
+  <input class="search-box" type="text" id="search-box" placeholder="Search reasoning…" oninput="renderCards()">
+</div>
+
+<div class="cards" id="cards-container">
+  <div class="empty-state">
+    <div class="icon">📊</div>
+    <h3>No log loaded</h3>
+    <p>Click "Load JSONL Log" to open a session file (e.g. logs/session_2026-07-22.jsonl)</p>
+  </div>
+</div>
+
+<script>
+let entries = [];
+let currentFilter = 'all';
+
+document.getElementById('file-input').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => parseLog(ev.target.result, file.name);
+  reader.readAsText(file);
+});
+
+function parseLog(text, filename) {
+  entries = [];
+  const lines = text.split('\n').filter(l => l.trim());
+  for (const line of lines) {
+    try { entries.push(JSON.parse(line)); } catch {}
+  }
+  document.querySelector('.header-sub').textContent = `Session Log Viewer — ${filename} (${entries.length} entries)`;
+  updateStats();
+  renderCards();
+}
+
+function updateStats() {
+  const total    = entries.length;
+  const fallbacks = entries.filter(e => e.fallback).length;
+  const trades   = entries.filter(e => !e.fallback && ['OPEN_BUY','OPEN_SELL'].includes(e.response?.action)).length;
+  const wins     = entries.filter(e => !e.fallback && e.response?.action === 'OPEN_BUY').length;  // placeholder
+  const losses   = entries.filter(e => !e.fallback && e.response?.action === 'OPEN_SELL').length; // placeholder
+  document.getElementById('stat-bars').textContent      = total;
+  document.getElementById('stat-trades').textContent    = trades;
+  document.getElementById('stat-wins').textContent      = wins;
+  document.getElementById('stat-losses').textContent    = losses;
+  document.getElementById('stat-fallbacks').textContent = fallbacks;
+  document.getElementById('stat-winrate').textContent   = trades ? Math.round(wins/trades*100)+'%' : '—';
+}
+
+function setFilter(f) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => {
+    b.className = 'filter-btn';
+  });
+  const map = { all:'active-all', buy:'active-buy', sell:'active-sell', hold:'active-hold', fallback:'active-hold' };
+  document.getElementById('btn-'+f).classList.add(map[f] || 'active-all');
+  renderCards();
+}
+
+function renderCards() {
+  const container = document.getElementById('cards-container');
+  const query = document.getElementById('search-box').value.toLowerCase();
+
+  const filtered = entries.filter(e => {
+    const action = e.response?.action || 'HOLD';
+    const isFallback = !!e.fallback;
+    const summary = (e.response?.reasoning?.summary || '').toLowerCase();
+
+    if (query && !summary.includes(query)) return false;
+    if (currentFilter === 'all') return true;
+    if (currentFilter === 'buy')      return action === 'OPEN_BUY';
+    if (currentFilter === 'sell')     return action === 'OPEN_SELL';
+    if (currentFilter === 'hold')     return action === 'HOLD' && !isFallback;
+    if (currentFilter === 'fallback') return isFallback;
+    return true;
+  });
+
+  if (!filtered.length) {
+    container.innerHTML = `<div class="empty-state"><div class="icon">🔍</div><h3>No results</h3><p>Try adjusting your filter or search term.</p></div>`;
+    return;
+  }
+
+  container.innerHTML = filtered.map((e, idx) => buildCard(e, idx)).join('');
+}
+
+function buildCard(e, idx) {
+  const action   = e.response?.action || 'HOLD';
+  const isFb     = !!e.fallback;
+  const bar      = e.bar_number || '?';
+  const entry    = e.response?.entry;
+  const reasoning = e.response?.reasoning || {};
+  const watch    = e.response?.watch || [];
+
+  const cardClass = isFb ? 'fallback-card' : action === 'OPEN_BUY' ? 'buy-card' : action === 'OPEN_SELL' ? 'sell-card' : 'hold-card';
+  const badgeClass = isFb ? 'badge-fallback' : action === 'OPEN_BUY' ? 'badge-buy' : action === 'OPEN_SELL' ? 'badge-sell' : 'badge-hold';
+  const badgeText = isFb ? 'FALLBACK' : action.replace('OPEN_', '');
+
+  const priceHtml = entry ? `
+    <div class="prices">
+      <div class="price-item"><div class="price-label">ENTRY</div>${entry.price?.toFixed(5) || '—'}</div>
+      <div class="price-item"><div class="price-label">SL</div>${entry.sl?.toFixed(5) || '—'}</div>
+      <div class="price-item"><div class="price-label">LOT</div>${entry.lot_size || '—'}</div>
+    </div>` : '';
+
+  const factors = (reasoning.supporting_factors || []).map(f => `<li>${f}</li>`).join('');
+  const concerns = (reasoning.concerns || []).map(c => `<li>${c}</li>`).join('');
+  const watchItems = watch.map(w => `<li>${w}</li>`).join('');
+
+  return `
+  <div class="card ${cardClass}" id="card-${idx}">
+    <div class="card-header" onclick="toggleCard(${idx})">
+      <span class="badge ${badgeClass}">${badgeText}</span>
+      <span class="bar-num">BAR ${bar}</span>
+      ${priceHtml}
+      <span class="summary-text">${reasoning.summary || '(no summary)'}</span>
+      <span class="expand-icon">▾</span>
+    </div>
+    <div class="card-body">
+      ${factors ? `<div class="detail-section"><div class="detail-label">Supporting Factors</div><ul class="factor-list">${factors}</ul></div>` : ''}
+      ${concerns ? `<div class="detail-section"><div class="detail-label">Concerns</div><ul class="factor-list concern-list">${concerns}</ul></div>` : ''}
+      ${reasoning.confidence_reasoning ? `<div class="detail-section"><div class="detail-label">Confidence Reasoning</div><div class="confidence-box">${reasoning.confidence_reasoning}</div></div>` : ''}
+      ${watchItems ? `<div class="detail-section"><div class="detail-label">Watch Next Bar</div><ul class="watch-list">${watchItems}</ul></div>` : ''}
+    </div>
+  </div>`;
+}
+
+function toggleCard(idx) {
+  const card = document.getElementById('card-' + idx);
+  card.classList.toggle('expanded');
+}
+</script>
+</body>
+</html>

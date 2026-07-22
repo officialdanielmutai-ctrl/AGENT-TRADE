@@ -114,6 +114,32 @@
 
 ---
 
+## Phase 4 — Execution Layer + Event System
+- [x] 4.1 — `DecisionExecutor.mqh` — entry (OrderSend), management
+      (MOVE_TO_BE, TIGHTEN_SL, CLOSE_ALL), hard trailing stop
+      (20 pip activate / 10 pip trail, independent of LLM), emergency
+      close at health < 25, MQL5 JSON field extractor.
+- [x] 4.2 — `EventTriggerMonitor.mqh` — 8 intra-bar events:
+      REGIME_CHANGE, HEALTH_CRITICAL, MOMENTUM_FLIP, PRICE_LEVEL_BREACH,
+      VOLUME_SPIKE, HTF_DIVERGENCE, SL_PROXIMITY, DRAWDOWN_LIMIT.
+      Watch levels registered from LLM watch[] array each bar.
+- [x] 4.3 — `LEINTUM_Engine.mq5` — full Phase 4 wiring: every-tick
+      event monitor, new-bar formula refresh, emergency close gate,
+      Bridge POST, parse response, cooldown-gated entry, management
+      loop, daily loss reset.
+- [x] 4.4 — `dashboard/viewer.html` — offline JSONL viewer; dark theme;
+      filter/search toolbar; expandable reasoning cards.
+- [x] 4.5 — `bridge/telegram.js` + `server.js` wired — fire-and-forget
+      Telegram alerts for trade entry, emergency close, health warning,
+      daily limit, bridge restart, intra-bar events.
+- [x] 4.6 — `dashboard/live.html` — live WebSocket dashboard;
+      auto-reconnect; bar metrics, position health gauge, last decision
+      card, 10-row trade log.
+- [x] System prompt — Section 4 upgraded with HOLD_MANAGED guidance.
+- [/] 4.7 — Phase 4 gate — pending demo account Strategy Tester run.
+
+---
+
 ## Open Questions
 
 - What is the Anthropic API key environment? (Personal account or
