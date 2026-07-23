@@ -164,8 +164,25 @@ public:
       ENUM_ORDER_TYPE orderType = (dec.action == ACTION_OPEN_BUY)
                                   ? ORDER_TYPE_BUY : ORDER_TYPE_SELL;
 
-      double slPrice  = dec.entry.sl;
-      double slPips   = MathAbs(dec.entry.price - slPrice) / _Point / 10.0;
+      double currentAskBid = (orderType == ORDER_TYPE_BUY)
+                             ? SymbolInfoDouble("EURUSD", SYMBOL_ASK)
+                             : SymbolInfoDouble("EURUSD", SYMBOL_BID);
+
+      double entryPrice = (dec.entry.price > 0.0) ? dec.entry.price : currentAskBid;
+      double slPrice    = dec.entry.sl;
+
+      // Fallback SL if LLM returned null or 0.0
+      if(slPrice <= 0.0)
+      {
+         if(orderType == ORDER_TYPE_BUY)
+            slPrice = currentAskBid - 10.0 * _Point * 10.0;
+         else
+            slPrice = currentAskBid + 10.0 * _Point * 10.0;
+      }
+
+      double slPips   = MathAbs(entryPrice - slPrice) / _Point / 10.0;
+      if(slPips < 1.0) slPips = 10.0;  // Sanity check
+
       double lotSize  = (dec.entry.lot_size > 0.0)
                         ? dec.entry.lot_size
                         : m_risk.ComputeLotSize(slPips, m_risk_percent);

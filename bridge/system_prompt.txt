@@ -155,6 +155,7 @@ No preamble. No explanation. No markdown code fences. No comments.
 
 Rules:
 - DO NOT OMIT ANY FIELDS. All fields in the schema are strictly required. Do not leave out `confidence_reasoning` or `watch`.
+- When action is OPEN_BUY or OPEN_SELL, the entry object MUST contain valid numeric values for `price`, `sl`, and `lot_size` (e.g. 0.01). Do NOT omit `lot_size` or set `sl` to null for an open action.
 - Set entry to null when action is HOLD or CLOSE_ALL.
 - Set management to null when there are no open positions.
 - supporting_factors and concerns must reference actual values from the payload (e.g. specific prices, ratios, scores).

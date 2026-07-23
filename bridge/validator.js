@@ -13,11 +13,11 @@ const decisionSchema = z.object({
   bar_number: z.number(),
   action: z.enum(['OPEN_BUY', 'OPEN_SELL', 'HOLD', 'CLOSE_ALL', 'CLOSE_PARTIAL']),
   entry: z.object({
-    price: z.number(),
-    sl: z.number(),
+    price: z.number().nullable().optional(),
+    sl: z.number().nullable().optional(),
     tp: z.number().nullable().optional(),
     tp_basis: z.string().optional(),
-    lot_size: z.number(),
+    lot_size: z.number().nullable().optional(),
   }).nullable(),
   management: z.object({
     action: z.string(),
